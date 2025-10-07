@@ -8,7 +8,7 @@ export default {
 	async run(client, interaction) {
 		const members = await interaction.guild?.members.fetch();
 
-		if (!members?.find((member) => member.id === interaction.user.id)?.roles.cache.has("1184264640486715532")) return interaction.reply("Você precisa ser um verificador para usar o comando.");
+		if (!members?.find((member) => member.id === interaction.user.id)?.roles.cache.has("991400149307887696")) return interaction.reply("Você precisa ser um verificador para usar o comando.");
 
 		let botsall: Array<{ label: string; value: string; description: string }> = [];
 
@@ -88,7 +88,7 @@ export default {
 					const selbotMember = interaction.guild?.members.cache.get(selbot?._id as string);
 
 					if (selbotMember) {
-						selbotMember.roles.add("988515244601118810");
+						selbotMember.roles.add("1167271802934923274");
 					}
 
 					const ownerMember = interaction.guild?.members.cache.get(selbot?.owner_id as string);
