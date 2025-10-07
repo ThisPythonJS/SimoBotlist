@@ -5,7 +5,7 @@ export default {
     name: "status",
     async run(client, interaction) {
       const fetchData = async (): Promise<ApiStatusStructure> => {
-        const req = await fetch("https://bombadeagua.vercel.app/api/status");
+        const req = await fetch("https://simo.squareweb.app/api/status");
         const json: ApiStatusStructure = await req.json();
         return json;
       }
