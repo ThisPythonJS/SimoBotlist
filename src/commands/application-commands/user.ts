@@ -9,7 +9,7 @@ export default {
 		const user = interaction.options.getUser("user") || interaction.user;
 		const userDb = await userSchema.findById(user.id);
 
-		if (!userDb) return interaction.reply("Usuário não encontrado no banco de dados.");
+		if (!userDb) return interaction.reply("❌ Usuário não encontrado no banco de dados.");
 
 		const userBots = await botSchema.find({
 			owner_id: user.id
@@ -17,7 +17,7 @@ export default {
 
 		const embed = new EmbedBuilder()
 			.setColor(0x0000ff)
-			.setTitle(":middle_finger: Informações do usuário")
+			.setTitle("Informações do usuário")
 			.setThumbnail(user.displayAvatarURL())
 			.addFields({
 				name: "Usuário",
@@ -27,7 +27,7 @@ export default {
 				value: userDb?.bio ? userDb.bio : "Nenhuma biografia definida",
 			}, {
 				name: "Bots",
-				value: userBots.length ? userBots.map((bot) => `[${bot.name}](https://bombadeagua.life/bot/${bot._id})`).join(", ") : "Nenhum bot adicionado",
+				value: userBots.length ? userBots.map((bot) => `[${bot.name}](https://bombadeagua.vercel.app/bot/${bot._id})`).join(", ") : "Nenhum bot adicionado",
 			});
 
 		console.log("banner_url" in userDb);
