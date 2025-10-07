@@ -8,7 +8,7 @@ export default {
 
         if (!shard) return interaction.reply({
             content: `Shard ${targetShard} não foi encontrado`,
-            ephemeral: true
+            flags: "Ephemeral"
         });
 
         return interaction.reply({
