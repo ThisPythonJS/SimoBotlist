@@ -4,7 +4,7 @@ import { CommandStructure } from "../types";
 
 client.on('messageCreate', async (message): Promise<any> => {
     if (message.author.bot) return;
-    if (/^<@1109254550168273007>$/.test(message.content)) return message.channel.send('meu prefixo s!');
+    if (/^<@1424966376413466655>$/.test(message.content)) return message.channel.send('🪴 Oi sou o **Simo Botlist**, aplicação oficial do Simo Workspace. Meu prefixo é `s!`');
 
     const prefix: string = 's!';
 
