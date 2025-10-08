@@ -5,19 +5,19 @@ import { EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, ComponentTy
 export default {
 	name: "notificações",
 	async run(client, interaction) {
-		await interaction.deferReply();
+		await interaction.deferReply({ flags: "Ephemeral" });
 		
 		const userDb = await userSchema.findById(interaction.user.id);
 
 		if (!userDb) {
-			return interaction.editReply("Usuário não encontrado no banco de dados.\nRegistre-se aqui: https://simo-botlist.vercel.app/login");
+			return interaction.editReply("❌ Usuário não encontrado no banco de dados.\n🔹 Registre-se aqui: https://simo-botlist.vercel.app/login");
 		}
 
 		const notifications = Array.from(userDb.notifications?.entries() || []);
 		const unreadNotifications = notifications.filter(([_, notif]: any) => !notif.read);
 
 		if (unreadNotifications.length === 0) {
-			return interaction.editReply("Você não tem notificações não lidas!");
+			return interaction.editReply("❌ Você não tem notificações não lidas!");
 		}
 
 		let currentPage = 0;
@@ -45,7 +45,7 @@ export default {
 			const prevBtn = new ButtonBuilder()
 				.setCustomId("prev")
 				.setLabel("Anterior")
-				.setStyle(ButtonStyle.Secondary)
+				.setStyle(ButtonStyle.Primary)
 				.setDisabled(page === 0);
 
 			const markReadBtn = new ButtonBuilder()
@@ -61,7 +61,7 @@ export default {
 			const nextBtn = new ButtonBuilder()
 				.setCustomId("next")
 				.setLabel("Próxima")
-				.setStyle(ButtonStyle.Secondary)
+				.setStyle(ButtonStyle.Primary)
 				.setDisabled(page === total - 1);
 
 			row.addComponents(prevBtn, markReadBtn, deleteBtn, nextBtn);
@@ -81,7 +81,7 @@ export default {
 
 		collector.on("collect", async (i) => {
 			if (i.user.id !== interaction.user.id) {
-				return i.reply({ content: "Essa interação não é sua!", flags: ["Ephemeral"] });
+				return i.reply({ content: "❌ Essa interação não é sua!", flags: ["Ephemeral"] });
 			}
 
 			await i.deferUpdate();
@@ -104,9 +104,10 @@ export default {
 					if (unreadNotifications.length === 0) {
 						await userDb.updateOne({ notifications_viewed: true });
 						return i.editReply({
-							content: "Todas as notificações foram marcadas como lidas!",
+							content: "✅ Todas as notificações foram marcadas como lidas!",
 							embeds: [],
-							components: []
+							components: [],
+							flags: "Ephemeral"
 						});
 					}
 					
@@ -124,9 +125,8 @@ export default {
 				if (unreadNotifications.length === 0) {
 					await userDb.updateOne({ notifications_viewed: true });
 					return i.editReply({
-						content: "Todas as notificações foram removidas!",
-						embeds: [],
-						components: []
+						content: "✅ Todas as notificações foram removidas!",
+						flags: "Ephemeral
 					});
 				}
 				
