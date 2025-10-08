@@ -4,32 +4,34 @@ import { EmbedBuilder } from "discord.js";
 export default {
     name: "status",
     async run(client, interaction) {
+      await interaction.deferReply();
+        
       const fetchData = async (): Promise<ApiStatusStructure> => {
-        const req = await fetch("https://simo.squareweb.app/api/status");
+        const req = await fetch("https://simo-botlist.vercel.app/api/status");
         const json: ApiStatusStructure = await req.json();
         return json;
       }
       const data: ApiStatusStructure = await fetchData();
-      if (!data) interaction.reply("A api está offline.");
-      
+      if (!data) interaction.editReply("❌ A API está temporariamente indisponivel. (off)");
+
       const embed = new EmbedBuilder()
-        .setTitle(":middle_finger: Api status")
-        .setColor(0x000ff)
+        .setTitle("⚡ API Status")
+        .setColor("#ffffff")
         .addFields(
           {
-            name: "Memória ram",
+            name: "Memória RAM",
             value: `${Math.round(data.free_mem)}/${Math.round(data.total_mem)}`
           },
           {
-            name: "Usuários logados",
+            name: "Usuários Logados",
             value: `${data.users}`
           },
           {
-            name: "Quantia de bots",
+            name: "Quantia de Bots",
             value: `${data.bots}`
           },
           {
-            name: "Uptime",
+            name: "Tempo de Atividade",
             value: "<t:" + Math.round(new Date(Date.now() - (data.uptime as number)).getTime() / 1000) + ":R>"
           },
           {
@@ -37,6 +39,6 @@ export default {
             value: `${data.request_count}`
           }
         );
-      return interaction.reply({ embeds: [embed] })
+      return interaction.editReply({ embeds: [embed] })
     }
 } as ApplicationCommandStructure;
