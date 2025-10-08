@@ -1,7 +1,7 @@
 import type { ApplicationCommandStructure } from "../../types";
 import { userSchema } from "../../schemas/User";
 import { botSchema } from "../../schemas/Bot";
-import { EmbedBuilder } from "discord.js";
+import { EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder } from "discord.js";
 
 export default {
 	name: "user-info",
@@ -19,20 +19,27 @@ export default {
 
 		const embed = new EmbedBuilder()
 			.setColor("#FFFFFF")
-			.setDescription(`## 👤 Informações do Usuário`)
+			.setDescription(`## ⚡ Informações do Usuário`)
 			.setThumbnail(user.displayAvatarURL())
-			.setImage(userDb.banner ?? null)
 			.addFields({
 				name: "Usuário",
-				value: `**${userDb.username}**\n-# ╰ \`${userDb._id}\``,
+				value: `\`${userDb.username}\`\n-# ╰ \`${userDb._id}\``,
 			}, {
 				name: "Biografia",
-				value: userDb?.bio ? userDb.bio : "Nenhuma biografia definida",
+				value: `\`${userDb?.bio}\`` ? `\`${userDb.bio}\`` : "\`Nenhuma biografia definida\`",
 			}, {
 				name: "Aplicações",
-				value: userBots.length ? userBots.map((bot) => `[${bot.name}](https://simo-botlist.vercel.app/bot/${bot._id})`).join(", ") : "Nenhum bot adicionado",
+				value: userBots.length ? userBots.map((bot) => `[**${bot.name}**](https://simo-botlist.vercel.app/bot/${bot._id})`).join(", ") : "Nenhum bot adicionado",
 			});
-
+		
+        const button = new ButtonBuilder()
+		  .setLabel("Link do Perfil")
+		  .setStyle(ButtonStyle.Link)
+		  .setEmoji("🔗")
+		  .setURL(`https://simo-botlist.vercel.app/user/${userDb._id}`);
+		
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(button);
+			
 		console.log("banner_url" in userDb);
 
 		if (userDb?.banner_url) {
@@ -40,7 +47,8 @@ export default {
 		}
 
 		return interaction.editReply({
-			embeds: [embed]
+			embeds: [embed],
+			components: [row]
 		});
 	}
 } as ApplicationCommandStructure;
