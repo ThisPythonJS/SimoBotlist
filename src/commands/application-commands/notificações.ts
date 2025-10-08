@@ -107,7 +107,6 @@ export default {
 							content: "✅ Todas as notificações foram marcadas como lidas!",
 							embeds: [],
 							components: [],
-							flags: "Ephemeral"
 						});
 					}
 					
@@ -126,7 +125,6 @@ export default {
 					await userDb.updateOne({ notifications_viewed: true });
 					return i.editReply({
 						content: "✅ Todas as notificações foram removidas!",
-						flags: "Ephemeral
 					});
 				}
 				
