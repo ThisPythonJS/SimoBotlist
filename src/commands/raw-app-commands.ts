@@ -55,5 +55,10 @@ export const JSONStructure: ApplicationCommandData[] = [
         required: false
       }
     ]
-		}
+	  },
+	{
+  name: "notificações",
+  type: ApplicationCommandType.ChatInput,
+  description: "Retorna todas as notificações do usuário.",
+	}
 ];
