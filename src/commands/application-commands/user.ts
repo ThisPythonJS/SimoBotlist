@@ -19,6 +19,7 @@ export default {
 			.setColor(0x0000ff)
 			.setTitle("Informações do usuário")
 			.setThumbnail(user.displayAvatarURL())
+			.setImage(userDb.banner)
 			.addFields({
 				name: "Usuário",
 				value: `**${userDb.username}** (\`${userDb._id}\`)`,
