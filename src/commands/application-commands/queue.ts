@@ -104,11 +104,11 @@ export default {
 						},
 						method: "POST",
 						body: JSON.stringify({
-							content: `<@${selbot?.owner_id}> :white_check_mark: **|** Seu bot: **${selbot?.name}** (\`${selbot?._id}\`) foi aprovado!`,
+							content: `<@${selbot?.owner_id}> :white_check_mark: Seu bot: **${selbot?.name}** (\`${selbot?._id}\`) foi aprovado!`,
 						})
 					});
 
-					return void interaction.update({ content: `Bot **${selbot?.name}** foi aprovado com sucesso!`, embeds: [], components: [] })
+					return void interaction.update({ content: `O bot **${selbot?.name}** foi aprovado com sucesso!`, embeds: [], components: [] })
 				} else {
 					await botSchema.findByIdAndDelete(selbot?._id);
 
@@ -118,7 +118,7 @@ export default {
 						},
 						method: "POST",
 						body: JSON.stringify({
-							content: `<@${selbot?.owner_id}>\n :x: **|** Seu bot: **${selbot?.name}** (\`${selbot?._id}\`) foi recusado.`,
+							content: `<@${selbot?.owner_id}>\n :x: Seu bot: **${selbot?.name}** (\`${selbot?._id}\`) foi recusado.`,
 						})
 					});
 					const user = await userSchema.findById(selbot?.owner_id);
