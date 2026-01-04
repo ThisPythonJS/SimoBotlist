@@ -57,12 +57,42 @@ export interface UserStructure {
 }
 
 export interface ApiStatusStructure {
-    total_mem: number;
-    free_mem: number;
-    users: number;
-    bots: number;
-    uptime: number;
-    request_count: number;
+    status: string;
+    timestamp: number;
+    memory: {
+        total_mb: number;
+        free_mb: number;
+        used_mb: number;
+        usage_percent: number;
+    };
+    cpu: {
+        cores: number;
+        model: string;
+        load_average: {
+            "1min": number;
+            "5min": number;
+            "15min": number;
+        };
+    };
+    system: {
+        platform: string;
+        arch: string;
+        node_version: string;
+    };
+    database: {
+        status: string;
+        name: string;
+    };
+    statistics: {
+        users: number;
+        bots: number;
+        request_count: number;
+    };
+    uptime: {
+        milliseconds: number;
+        formatted: string;
+        started_at: number;
+    };
 }
 
 export interface Team {
