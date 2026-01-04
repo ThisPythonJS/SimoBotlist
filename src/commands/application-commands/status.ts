@@ -1,8 +1,61 @@
-import type { ApiStatusStructure, ApplicationCommandStructure } from "../../types";
+import type { ApplicationCommandStructure } from "../../types";
 import { 
     ContainerBuilder,
-    MessageFlags,
+    SectionBuilder,
+    TextDisplayBuilder,
+    SeparatorBuilder,
+    MessageFlags
 } from "discord.js";
+
+interface ApiStatusStructureOld {
+    total_mem: number;
+    free_mem: number;
+    users: number;
+    bots: number;
+    uptime: number;
+    request_count: number;
+}
+
+interface ApiStatusStructureNew {
+    status: string;
+    timestamp: number;
+    memory: {
+        total_mb: number;
+        free_mb: number;
+        used_mb: number;
+        usage_percent: number;
+    };
+    cpu: {
+        cores: number;
+        model: string;
+        load_average: {
+            "1min": number;
+            "5min": number;
+            "15min": number;
+        };
+    };
+    system: {
+        platform: string;
+        arch: string;
+        node_version: string;
+    };
+    database: {
+        status: string;
+        name: string;
+    };
+    statistics: {
+        users: number;
+        bots: number;
+        request_count: number;
+    };
+    uptime: {
+        milliseconds: number;
+        formatted: string;
+        started_at: number;
+    };
+}
+
+type ApiStatusStructure = ApiStatusStructureOld | ApiStatusStructureNew;
 
 export default {
     name: "status",
@@ -28,15 +81,102 @@ export default {
             });
         }
 
-        const statusEmoji = data.status === "healthy" ? "🟢" : "🟡";
-        const dbEmoji = data.database.status === "connected" ? "🟢" : "🔴";
-        
-        const memoryBar = createProgressBar(data.memory.usage_percent, 10);
-        const cpuLoad1min = (data.cpu.load_average["1min"] / data.cpu.cores) * 100;
-        const cpuBar = createProgressBar(cpuLoad1min, 10);
+        const isNewVersion = 'memory' in data;
+
+        if (isNewVersion) {
+            const newData = data as ApiStatusStructureNew;
+            const statusEmoji = newData.status === "healthy" ? "🟢" : "🟡";
+            const dbEmoji = newData.database.status === "connected" ? "🟢" : "🔴";
+            
+            const memoryBar = createProgressBar(newData.memory.usage_percent, 10);
+            const cpuLoad1min = (newData.cpu.load_average["1min"] / newData.cpu.cores) * 100;
+            const cpuBar = createProgressBar(cpuLoad1min, 10);
+
+            const container = new ContainerBuilder()
+                .setAccentColor(newData.status === "healthy" ? 0x00FF00 : 0xFFFF00);
+
+            container.addSectionComponents((section) =>
+                section.addTextDisplayComponents((textDisplay) =>
+                    textDisplay.setContent(`## ⚡ Status da API Simo`)
+                )
+            );
+
+            container.addSeparatorComponents((separator) => separator);
+
+            container.addTextDisplayComponents((textDisplay) =>
+                textDisplay.setContent(
+                    `**Status Geral** ${statusEmoji}\n` +
+                    `-# Sistema: \`${newData.system.platform} ${newData.system.arch}\`\n` +
+                    `-# Node: \`${newData.system.node_version}\``
+                )
+            );
+
+            container.addSeparatorComponents((separator) => separator);
+
+            container.addTextDisplayComponents((textDisplay) =>
+                textDisplay.setContent(
+                    `**💾 Memória RAM**\n` +
+                    `${memoryBar} ${newData.memory.usage_percent}%\n` +
+                    `\`${newData.memory.used_mb}MB\` / \`${newData.memory.total_mb}MB\` (Livre: \`${newData.memory.free_mb}MB\`)`
+                )
+            );
+
+            container.addSeparatorComponents((separator) => separator);
+
+            container.addTextDisplayComponents((textDisplay) =>
+                textDisplay.setContent(
+                    `**🖥️ CPU**\n` +
+                    `${cpuBar} ${Math.round(cpuLoad1min)}%\n` +
+                    `Cores: \`${newData.cpu.cores}\`\n` +
+                    `Load Average: \`${newData.cpu.load_average["1min"]}\` / \`${newData.cpu.load_average["5min"]}\` / \`${newData.cpu.load_average["15min"]}\`\n` +
+                    `-# ${newData.cpu.model}`
+                )
+            );
+
+            container.addSeparatorComponents((separator) => separator);
+
+            container.addTextDisplayComponents((textDisplay) =>
+                textDisplay.setContent(
+                    `**🗄️ Database** ${dbEmoji}\n` +
+                    `Status: \`${newData.database.status}\`\n` +
+                    `Database: \`${newData.database.name}\``
+                )
+            );
+
+            container.addSeparatorComponents((separator) => separator);
+
+            container.addTextDisplayComponents((textDisplay) =>
+                textDisplay.setContent(
+                    `**📊 Estatísticas**\n` +
+                    `Usuários: \`${newData.statistics.users}\`\n` +
+                    `Bots: \`${newData.statistics.bots}\`\n` +
+                    `Requisições: \`${newData.statistics.request_count}\``
+                )
+            );
+
+            container.addSeparatorComponents((separator) => separator);
+
+            container.addTextDisplayComponents((textDisplay) =>
+                textDisplay.setContent(
+                    `**⏱️ Uptime**\n` +
+                    `${newData.uptime.formatted}\n` +
+                    `Iniciado: <t:${Math.round(newData.uptime.started_at / 1000)}:R>`
+                )
+            );
+
+            return interaction.editReply({
+                components: [container],
+                flags: MessageFlags.IsComponentsV2
+            });
+        }
+
+        const oldData = data as ApiStatusStructureOld;
+        const usedMemMB = Math.round(oldData.total_mem - oldData.free_mem);
+        const memUsagePercent = ((usedMemMB / oldData.total_mem) * 100).toFixed(2);
+        const memoryBar = createProgressBar(parseFloat(memUsagePercent), 10);
 
         const container = new ContainerBuilder()
-            .setAccentColor(data.status === "healthy" ? 0x00FF00 : 0xFFFF00);
+            .setAccentColor(0x00FF00);
 
         container.addSectionComponents((section) =>
             section.addTextDisplayComponents((textDisplay) =>
@@ -48,41 +188,9 @@ export default {
 
         container.addTextDisplayComponents((textDisplay) =>
             textDisplay.setContent(
-                `**Status Geral** ${statusEmoji}\n` +
-                `-# Sistema: \`${data.system.platform} ${data.system.arch}\`\n` +
-                `-# Node: \`${data.system.node_version}\``
-            )
-        );
-
-        container.addSeparatorComponents((separator) => separator);
-
-        container.addTextDisplayComponents((textDisplay) =>
-            textDisplay.setContent(
                 `**💾 Memória RAM**\n` +
-                `${memoryBar} ${data.memory.usage_percent}%\n` +
-                `\`${data.memory.used_mb}MB\` / \`${data.memory.total_mb}MB\` (Livre: \`${data.memory.free_mb}MB\`)`
-            )
-        );
-
-        container.addSeparatorComponents((separator) => separator);
-
-        container.addTextDisplayComponents((textDisplay) =>
-            textDisplay.setContent(
-                `**🖥️ CPU**\n` +
-                `${cpuBar} ${Math.round(cpuLoad1min)}%\n` +
-                `Cores: \`${data.cpu.cores}\`\n` +
-                `Load Average: \`${data.cpu.load_average["1min"]}\` / \`${data.cpu.load_average["5min"]}\` / \`${data.cpu.load_average["15min"]}\`\n` +
-                `-# ${data.cpu.model}`
-            )
-        );
-
-        container.addSeparatorComponents((separator) => separator);
-
-        container.addTextDisplayComponents((textDisplay) =>
-            textDisplay.setContent(
-                `**🗄️ Database** ${dbEmoji}\n` +
-                `Status: \`${data.database.status}\`\n` +
-                `Database: \`${data.database.name}\``
+                `${memoryBar} ${memUsagePercent}%\n` +
+                `\`${usedMemMB}MB\` / \`${Math.round(oldData.total_mem)}MB\` (Livre: \`${Math.round(oldData.free_mem)}MB\`)`
             )
         );
 
@@ -91,9 +199,9 @@ export default {
         container.addTextDisplayComponents((textDisplay) =>
             textDisplay.setContent(
                 `**📊 Estatísticas**\n` +
-                `Usuários: \`${data.statistics.users}\`\n` +
-                `Bots: \`${data.statistics.bots}\`\n` +
-                `Requisições: \`${data.statistics.request_count}\``
+                `Usuários: \`${oldData.users}\`\n` +
+                `Bots: \`${oldData.bots}\`\n` +
+                `Requisições: \`${oldData.request_count}\``
             )
         );
 
@@ -102,8 +210,7 @@ export default {
         container.addTextDisplayComponents((textDisplay) =>
             textDisplay.setContent(
                 `**⏱️ Uptime**\n` +
-                `${data.uptime.formatted}\n` +
-                `Iniciado: <t:${Math.round(data.uptime.started_at / 1000)}:R>`
+                `Iniciado: <t:${Math.round((Date.now() - oldData.uptime) / 1000)}:R>`
             )
         );
 
