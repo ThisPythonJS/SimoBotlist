@@ -42,23 +42,13 @@ export default {
 
 		const headerSection = new SectionBuilder()
 			.addTextDisplayComponents((textDisplay) => 
-				textDisplay.setContent(`## ⚡ Informações do Usuário`)
+				textDisplay.setContent(`## ⚡ Informações do Usuário\n**Usuário**\n\`${userDb.username}\`\n-# ╰ \`${userDb._id}\`\n**Biografia**\n${userDb?.bio || "\`Nenhuma biografia definida\`"}`)
 			)
 			.setThumbnailAccessory((thumbnail) => 
 				thumbnail.setURL(avatarURL)
 			);
 
 		container.addSectionComponents(headerSection);
-
-		container.addTextDisplayComponents((textDisplay) => 
-			textDisplay.setContent(`**Usuário**\n\`${userDb.username}\`\n-# ╰ \`${userDb._id}\``)
-		);
-
-		container.addSeparatorComponents((separator) => separator);
-
-		container.addTextDisplayComponents((textDisplay) => 
-			textDisplay.setContent(`**Biografia**\n${userDb?.bio || "\`Nenhuma biografia definida\`"}`)
-		);
 
 		container.addSeparatorComponents((separator) => separator);
 
@@ -80,7 +70,7 @@ export default {
 				galleryItems.push((item: any) => 
 					item
 						.setURL(customBanner)
-						.setDescription("Banner Customizado")
+						.setDescription("Banner na Simo Botlist (dashboard)")
 				);
 			}
 			
@@ -88,7 +78,7 @@ export default {
 				galleryItems.push((item: any) => 
 					item
 						.setURL(discordBanner)
-						.setDescription("Banner do Discord")
+						.setDescription("Banner do Discord (global)")
 				);
 			}
 
@@ -101,6 +91,12 @@ export default {
 			.setStyle(ButtonStyle.Link)
 			.setEmoji("🔗")
 			.setURL(`https://simobotlist.online/user/${userDb._id}`);
+
+		const dashboardButton = new ButtonBuilder()
+		    .setLabel("Dashboard")
+			.setStyle(ButtonStyle.Link)
+			.setEmoji("✨")
+			.setURL("https://simobotlist.online/dashboard")
 
 		const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(profileButton);
 		container.addActionRowComponents(actionRow);
