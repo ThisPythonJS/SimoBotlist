@@ -1,0 +1,28 @@
+# Visual Studio Code
+
+/vscode
+
+# Testes
+
+/index.spec.ts
+
+# Módulos
+
+.package-lock.json
+/node_modules/.package-lock.json
+/node_modules
+/package-lock.json
+/bun.lock
+
+# Secretos
+
+.env
+
+# Replit
+
+.replit
+replit.nix
+
+# config
+
+camposcloud.config

@@ -1,0 +1,227 @@
+import type { ApplicationCommandStructure, BotStructure } from "../../types";
+import { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuInteraction, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
+import { botSchema } from "../../schemas/Bot";
+import { userSchema } from "../../schemas/User";
+
+export default {
+	name: "queue",
+	async run(client, interaction) {
+		const members = await interaction.guild?.members.fetch();
+
+		if (!members?.find((member) => member.id === interaction.user.id)?.roles.cache.has("991400149307887696")) 
+			return interaction.reply("<:errado:1457340965974049044> Você precisa ser um verificador para usar o comando.");
+
+		let botsall: Array<{ label: string; value: string; description: string }> = [];
+
+		const bots = await botSchema.find({ approved: false });
+
+		if (bots.length === 0) 
+			return interaction.reply({ content: "<:errado:1457340965974049044> Não há bots para serem verificados." });
+
+		const embed: EmbedBuilder = new EmbedBuilder()
+			.setTitle("Queue")
+			.setColor(0x054f77)
+			.setDescription(bots.map((a, index) => `**[${index + 1}]** [${a.name}](https://discord.com/api/oauth2/authorize?client_id=${a._id}&scope=bot%20applications.commands)`).join("\n"))
+
+		bots.map((bot) => {
+			botsall.push({
+				label: bot.name,
+				description: bot.short_description.slice(0, 50) + "...",
+				value: bot._id
+			})
+		});
+
+		const actionRow = new ActionRowBuilder<StringSelectMenuBuilder>()
+			.addComponents(
+				new StringSelectMenuBuilder()
+					.setCustomId("selecaobot")
+					.setPlaceholder("Selecione um bot")
+					.setMinValues(1)
+					.setMaxValues(1)
+					.addOptions(botsall)
+			);
+
+		const int = await interaction.reply({
+			embeds: [embed],
+			components: [actionRow],
+		});
+
+		const colector = int.createMessageComponentCollector({ filter: (i) => i.user.id === interaction.user.id, time: 30000 });
+
+		colector.on("collect", async (interaction: StringSelectMenuInteraction) => {
+			if (!interaction.isStringSelectMenu()) return;
+			if (interaction.customId !== "selecaobot") return;
+
+			const selbot: BotStructure | undefined = bots.find((bot) => bot._id === interaction.values[0]);
+
+			const embed: EmbedBuilder = new EmbedBuilder()
+				.setTitle("Ações - " + selbot?.name)
+				.setColor(0x054f77)
+				.setDescription(`Você deseja aprovar o bot **${selbot?.name}**, ou recusar? Escolha uma das alternativas abaixo.`);
+
+			const actionRow = new ActionRowBuilder<ButtonBuilder>()
+				.addComponents(
+					new ButtonBuilder()
+						.setCustomId("aprovado")
+						.setLabel("Aprovar")
+						.setStyle(ButtonStyle.Success)
+						.setEmoji("✅"),
+					new ButtonBuilder()
+						.setCustomId("recusado")
+						.setLabel("Recusar")
+						.setStyle(ButtonStyle.Danger)
+						.setEmoji("✖️")
+				);
+
+			const int = await interaction.update({ embeds: [embed], components: [actionRow] });
+
+			const colector = int.createMessageComponentCollector({ filter: i => i.user.id === interaction.user.id, time: 30000 });
+
+			colector.on("collect", async (interaction) => {
+				if (!interaction.isButton()) return;
+
+				if (interaction.customId === "aprovado") {
+					const modal = new ModalBuilder()
+						.setCustomId(`modal_aprovado_${selbot?._id}`)
+						.setTitle("Comentários da Aprovação");
+
+					const commentInput = new TextInputBuilder()
+						.setCustomId("comentarios")
+						.setLabel("Comentários sobre a análise")
+						.setStyle(TextInputStyle.Paragraph)
+						.setPlaceholder("Digite seus comentários aqui...")
+						.setRequired(false)
+						.setMaxLength(1024);
+
+					const firstActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(commentInput);
+
+					modal.addComponents(firstActionRow);
+
+					await interaction.showModal(modal);
+
+					const modalInteraction = await interaction.awaitModalSubmit({ 
+						filter: (i) => i.customId === `modal_aprovado_${selbot?._id}`, 
+						time: 120000 
+					}).catch(() => null);
+
+					if (!modalInteraction) return;
+
+					const comentarios = modalInteraction.fields.getTextInputValue("comentarios") || "Nenhum comentário fornecido.";
+
+					await botSchema.findById(selbot?._id).updateOne({
+						approved: true
+					});
+
+					const selbotMember = interaction.guild?.members.cache.get(selbot?._id as string);
+
+					if (selbotMember) {
+						selbotMember.roles.add("1167271802934923274");
+					}
+
+					const ownerMember = interaction.guild?.members.cache.get(selbot?.owner_id as string);
+
+					if (ownerMember) {
+						ownerMember.roles.add("991507628553412759");
+					}
+
+					await fetch(process.env.WEBHOOK as string, {
+						headers: {
+							"Content-Type": 'application/json'
+						},
+						method: "POST",
+						body: JSON.stringify({
+							content: `<@${selbot?.owner_id}>`,
+							embeds: [
+								{
+									title: `<:correto:1457340980452786320> ${selbot?.name} foi aprovado na análise`,
+									description: `> **Comentários do analisador:**\n${comentarios}`,
+									color: 0x054f77
+								}
+							]
+						})
+					});
+
+					await modalInteraction.deferUpdate();
+					return void interaction.editReply({ 
+						content: `O bot **${selbot?.name}** foi aprovado com sucesso!`, 
+						embeds: [], 
+						components: [] 
+					});
+
+				} else {
+					const modal = new ModalBuilder()
+						.setCustomId(`modal_recusado_${selbot?._id}`)
+						.setTitle("Motivo da Recusa");
+
+					const reasonInput = new TextInputBuilder()
+						.setCustomId("motivo")
+						.setLabel("Motivo da recusa")
+						.setStyle(TextInputStyle.Paragraph)
+						.setPlaceholder("Digite o motivo da recusa...")
+						.setRequired(true)
+						.setMaxLength(1024);
+
+					const firstActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(reasonInput);
+
+					modal.addComponents(firstActionRow);
+
+					await interaction.showModal(modal);
+
+					const modalInteraction = await interaction.awaitModalSubmit({ 
+						filter: (i) => i.customId === `modal_recusado_${selbot?._id}`, 
+						time: 120000 
+					}).catch(() => null);
+
+					if (!modalInteraction) return;
+
+					const motivo = modalInteraction.fields.getTextInputValue("motivo");
+
+					await botSchema.findByIdAndDelete(selbot?._id);
+
+					await fetch(process.env.WEBHOOK as string, {
+						headers: {
+							"Content-Type": 'application/json'
+						},
+						method: "POST",
+						body: JSON.stringify({
+							content: `<@${selbot?.owner_id}>`,
+							embeds: [
+								{
+									title: `<:errado:1457340965974049044> ${selbot?.name} foi recusado na análise`,
+									description: `**Motivo:**\n${motivo}`,
+									color: 0xFF0000
+								}
+							]
+						})
+					});
+
+					const user = await userSchema.findById(selbot?.owner_id);
+
+					if (user) {
+						const notificationsId = [...user.notifications.keys()];
+
+						user.notifications.set(
+							notificationsId.length < 1
+								? "1"
+								: `${Math.max(...notificationsId.map(Number)) + 1}`,
+							{
+								content: `Seu bot **${selbot?.name}** foi recusado.\n**Motivo:** ${motivo}`,
+								type: 2,
+								sent_at: new Date().toISOString(),
+							}
+						);
+
+						await user.save();
+					}
+
+					await modalInteraction.deferUpdate();
+					return void interaction.editReply({ 
+						content: `Bot **${selbot?.name}** foi recusado com sucesso!`, 
+						embeds: [], 
+						components: [] 
+					});
+				}
+			});
+		});
+	},
+} as ApplicationCommandStructure;
