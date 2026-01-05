@@ -87,36 +87,36 @@ export default {
             const cpuBar = createProgressBar(cpuLoad1min, 10);
 
             const embed = new EmbedBuilder()
-                .setTitle("⚡ Status da API Simo")
+                .setTitle("Status da API")
                 .setColor(newData.status === "healthy" ? 0x00FF00 : 0xFFFF00)
                 .addFields(
                     {
-                        name: `**Status Geral** ${statusEmoji}`,
-                        value: `-# Sistema: \`${newData.system.platform} ${newData.system.arch}\`\n-# Node: \`${newData.system.node_version}\``,
+                        name: `Status Geral ${statusEmoji}`,
+                        value: `Sistema: \`${newData.system.platform} ${newData.system.arch}\`\nNode: \`${newData.system.node_version}\``,
                         inline: false
                     },
                     {
-                        name: "💾 Memória RAM",
+                        name: "Memória RAM",
                         value: `${memoryBar} ${newData.memory.usage_percent}%\n\`${newData.memory.used_mb}MB\` / \`${newData.memory.total_mb}MB\` (Livre: \`${newData.memory.free_mb}MB\`)`,
                         inline: false
                     },
                     {
-                        name: "🖥️ CPU",
-                        value: `${cpuBar} ${Math.round(cpuLoad1min)}%\nCores: \`${newData.cpu.cores}\`\nLoad Average: \`${newData.cpu.load_average["1min"]}\` / \`${newData.cpu.load_average["5min"]}\` / \`${newData.cpu.load_average["15min"]}\`\n-# ${newData.cpu.model}`,
+                        name: "CPU",
+                        value: `${cpuBar} ${Math.round(cpuLoad1min)}%\nCores: \`${newData.cpu.cores}\`\nLoad Average: \`${newData.cpu.load_average["1min"]}\` / \`${newData.cpu.load_average["5min"]}\` / \`${newData.cpu.load_average["15min"]}\`\n${newData.cpu.model}`,
                         inline: false
                     },
                     {
-                        name: `🗄️ Database ${dbEmoji}`,
+                        name: `Database ${dbEmoji}`,
                         value: `Status: \`${newData.database.status}\`\nDatabase: \`${newData.database.name}\``,
                         inline: false
                     },
                     {
-                        name: "📊 Estatísticas",
+                        name: "Estatísticas",
                         value: `Usuários: \`${newData.statistics.users}\`\nBots: \`${newData.statistics.bots}\`\nRequisições: \`${newData.statistics.request_count}\``,
                         inline: false
                     },
                     {
-                        name: "⏱️ Uptime",
+                        name: "Uptime",
                         value: `${newData.uptime.formatted}\nIniciado: <t:${Math.round(newData.uptime.started_at / 1000)}:R>`,
                         inline: false
                     }
@@ -132,21 +132,21 @@ export default {
         const memoryBar = createProgressBar(parseFloat(memUsagePercent), 10);
 
         const embed = new EmbedBuilder()
-            .setTitle("⚡ Status da API Simo")
+            .setTitle("Status da API")
             .setColor(0x00FF00)
             .addFields(
                 {
-                    name: "💾 Memória RAM",
+                    name: "Memória RAM",
                     value: `${memoryBar} ${memUsagePercent}%\n\`${usedMemMB}MB\` / \`${Math.round(oldData.total_mem)}MB\` (Livre: \`${Math.round(oldData.free_mem)}MB\`)`,
                     inline: false
                 },
                 {
-                    name: "📊 Estatísticas",
+                    name: "Estatísticas",
                     value: `Usuários: \`${oldData.users}\`\nBots: \`${oldData.bots}\`\nRequisições: \`${oldData.request_count}\``,
                     inline: false
                 },
                 {
-                    name: "⏱️ Uptime",
+                    name: "Uptime",
                     value: `Iniciado: <t:${Math.round((Date.now() - oldData.uptime) / 1000)}:R>`,
                     inline: false
                 }
@@ -160,5 +160,5 @@ export default {
 function createProgressBar(percentage: number, length: number = 10): string {
     const filled = Math.round((percentage / 100) * length);
     const empty = length - filled;
-    return `[${'█'.repeat(filled)}${'░'.repeat(empty)}]`;
+    return `${'▰'.repeat(filled)}${'▱'.repeat(empty)}`;
 }
