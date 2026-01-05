@@ -80,6 +80,7 @@ export default {
         if (isNewVersion) {
             const newData = data as ApiStatusStructureNew;
             const statusEmoji = newData.status === "healthy" ? "🟢" : "🟡";
+            const statusPingEmoji = client.ws.ping <=50 ? "🟢" : "🟡";
             const dbEmoji = newData.database.status === "connected" ? "🟢" : "🔴";
             
             const memoryBar = createProgressBar(newData.memory.usage_percent, 10);
@@ -87,9 +88,12 @@ export default {
             const cpuBar = createProgressBar(cpuLoad1min, 10);
 
             const embed = new EmbedBuilder()
-                .setTitle("Status da API")
                 .setColor(newData.status === "healthy" ? 0x00FF00 : 0xFFFF00)
                 .addFields(
+                    {
+                        name: `Latência do Gateway do Discord ${statusPingEmoji}`,
+                        value: `${client.ws.ping}ms`
+                    },
                     {
                         name: `Status Geral ${statusEmoji}`,
                         value: `Sistema: \`${newData.system.platform} ${newData.system.arch}\`\nNode: \`${newData.system.node_version}\``,
