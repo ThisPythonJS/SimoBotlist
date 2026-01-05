@@ -1,11 +1,5 @@
 import type { ApplicationCommandStructure } from "../../types";
-import { 
-    ContainerBuilder,
-    SectionBuilder,
-    TextDisplayBuilder,
-    SeparatorBuilder,
-    MessageFlags
-} from "discord.js";
+import { EmbedBuilder } from "discord.js";
 
 interface ApiStatusStructureOld {
     total_mem: number;
@@ -92,84 +86,44 @@ export default {
             const cpuLoad1min = (newData.cpu.load_average["1min"] / newData.cpu.cores) * 100;
             const cpuBar = createProgressBar(cpuLoad1min, 10);
 
-            const container = new ContainerBuilder()
-                .setAccentColor(newData.status === "healthy" ? 0x00FF00 : 0xFFFF00);
+            const embed = new EmbedBuilder()
+                .setTitle("⚡ Status da API Simo")
+                .setColor(newData.status === "healthy" ? 0x00FF00 : 0xFFFF00)
+                .addFields(
+                    {
+                        name: `**Status Geral** ${statusEmoji}`,
+                        value: `-# Sistema: \`${newData.system.platform} ${newData.system.arch}\`\n-# Node: \`${newData.system.node_version}\``,
+                        inline: false
+                    },
+                    {
+                        name: "💾 Memória RAM",
+                        value: `${memoryBar} ${newData.memory.usage_percent}%\n\`${newData.memory.used_mb}MB\` / \`${newData.memory.total_mb}MB\` (Livre: \`${newData.memory.free_mb}MB\`)`,
+                        inline: false
+                    },
+                    {
+                        name: "🖥️ CPU",
+                        value: `${cpuBar} ${Math.round(cpuLoad1min)}%\nCores: \`${newData.cpu.cores}\`\nLoad Average: \`${newData.cpu.load_average["1min"]}\` / \`${newData.cpu.load_average["5min"]}\` / \`${newData.cpu.load_average["15min"]}\`\n-# ${newData.cpu.model}`,
+                        inline: false
+                    },
+                    {
+                        name: `🗄️ Database ${dbEmoji}`,
+                        value: `Status: \`${newData.database.status}\`\nDatabase: \`${newData.database.name}\``,
+                        inline: false
+                    },
+                    {
+                        name: "📊 Estatísticas",
+                        value: `Usuários: \`${newData.statistics.users}\`\nBots: \`${newData.statistics.bots}\`\nRequisições: \`${newData.statistics.request_count}\``,
+                        inline: false
+                    },
+                    {
+                        name: "⏱️ Uptime",
+                        value: `${newData.uptime.formatted}\nIniciado: <t:${Math.round(newData.uptime.started_at / 1000)}:R>`,
+                        inline: false
+                    }
+                )
+                .setTimestamp();
 
-            const headerText = new TextDisplayBuilder()
-                .setContent(`## ⚡ Status da API Simo`);
-            
-            const headerSection = new SectionBuilder()
-                .addTextDisplayComponents(headerText);
-
-            container.addSectionComponents(headerSection);
-            container.addSeparatorComponents(new SeparatorBuilder());
-
-            const statusText = new TextDisplayBuilder()
-                .setContent(
-                    `**Status Geral** ${statusEmoji}\n` +
-                    `-# Sistema: \`${newData.system.platform} ${newData.system.arch}\`\n` +
-                    `-# Node: \`${newData.system.node_version}\``
-                );
-
-            container.addTextDisplayComponents(statusText);
-            container.addSeparatorComponents(new SeparatorBuilder());
-
-            const memoryText = new TextDisplayBuilder()
-                .setContent(
-                    `**💾 Memória RAM**\n` +
-                    `${memoryBar} ${newData.memory.usage_percent}%\n` +
-                    `\`${newData.memory.used_mb}MB\` / \`${newData.memory.total_mb}MB\` (Livre: \`${newData.memory.free_mb}MB\`)`
-                );
-
-            container.addTextDisplayComponents(memoryText);
-            container.addSeparatorComponents(new SeparatorBuilder());
-
-            const cpuText = new TextDisplayBuilder()
-                .setContent(
-                    `**🖥️ CPU**\n` +
-                    `${cpuBar} ${Math.round(cpuLoad1min)}%\n` +
-                    `Cores: \`${newData.cpu.cores}\`\n` +
-                    `Load Average: \`${newData.cpu.load_average["1min"]}\` / \`${newData.cpu.load_average["5min"]}\` / \`${newData.cpu.load_average["15min"]}\`\n` +
-                    `-# ${newData.cpu.model}`
-                );
-
-            container.addTextDisplayComponents(cpuText);
-            container.addSeparatorComponents(new SeparatorBuilder());
-
-            const dbText = new TextDisplayBuilder()
-                .setContent(
-                    `**🗄️ Database** ${dbEmoji}\n` +
-                    `Status: \`${newData.database.status}\`\n` +
-                    `Database: \`${newData.database.name}\``
-                );
-
-            container.addTextDisplayComponents(dbText);
-            container.addSeparatorComponents(new SeparatorBuilder());
-
-            const statsText = new TextDisplayBuilder()
-                .setContent(
-                    `**📊 Estatísticas**\n` +
-                    `Usuários: \`${newData.statistics.users}\`\n` +
-                    `Bots: \`${newData.statistics.bots}\`\n` +
-                    `Requisições: \`${newData.statistics.request_count}\``
-                );
-
-            container.addTextDisplayComponents(statsText);
-            container.addSeparatorComponents(new SeparatorBuilder());
-
-            const uptimeText = new TextDisplayBuilder()
-                .setContent(
-                    `**⏱️ Uptime**\n` +
-                    `${newData.uptime.formatted}\n` +
-                    `Iniciado: <t:${Math.round(newData.uptime.started_at / 1000)}:R>`
-                );
-
-            container.addTextDisplayComponents(uptimeText);
-
-            return interaction.editReply({
-                components: [container],
-                flags: MessageFlags.IsComponentsV2
-            });
+            return interaction.editReply({ embeds: [embed] });
         }
 
         const oldData = data as ApiStatusStructureOld;
@@ -177,51 +131,29 @@ export default {
         const memUsagePercent = ((usedMemMB / oldData.total_mem) * 100).toFixed(2);
         const memoryBar = createProgressBar(parseFloat(memUsagePercent), 10);
 
-        const container = new ContainerBuilder()
-            .setAccentColor(0x00FF00);
+        const embed = new EmbedBuilder()
+            .setTitle("⚡ Status da API Simo")
+            .setColor(0x00FF00)
+            .addFields(
+                {
+                    name: "💾 Memória RAM",
+                    value: `${memoryBar} ${memUsagePercent}%\n\`${usedMemMB}MB\` / \`${Math.round(oldData.total_mem)}MB\` (Livre: \`${Math.round(oldData.free_mem)}MB\`)`,
+                    inline: false
+                },
+                {
+                    name: "📊 Estatísticas",
+                    value: `Usuários: \`${oldData.users}\`\nBots: \`${oldData.bots}\`\nRequisições: \`${oldData.request_count}\``,
+                    inline: false
+                },
+                {
+                    name: "⏱️ Uptime",
+                    value: `Iniciado: <t:${Math.round((Date.now() - oldData.uptime) / 1000)}:R>`,
+                    inline: false
+                }
+            )
+            .setTimestamp();
 
-        const headerText = new TextDisplayBuilder()
-            .setContent(`## ⚡ Status da API Simo`);
-        
-        const headerSection = new SectionBuilder()
-            .addTextDisplayComponents(headerText);
-
-        container.addSectionComponents(headerSection);
-        container.addSeparatorComponents(new SeparatorBuilder());
-
-        const memoryText = new TextDisplayBuilder()
-            .setContent(
-                `**💾 Memória RAM**\n` +
-                `${memoryBar} ${memUsagePercent}%\n` +
-                `\`${usedMemMB}MB\` / \`${Math.round(oldData.total_mem)}MB\` (Livre: \`${Math.round(oldData.free_mem)}MB\`)`
-            );
-
-        container.addTextDisplayComponents(memoryText);
-        container.addSeparatorComponents(new SeparatorBuilder());
-
-        const statsText = new TextDisplayBuilder()
-            .setContent(
-                `**📊 Estatísticas**\n` +
-                `Usuários: \`${oldData.users}\`\n` +
-                `Bots: \`${oldData.bots}\`\n` +
-                `Requisições: \`${oldData.request_count}\``
-            );
-
-        container.addTextDisplayComponents(statsText);
-        container.addSeparatorComponents(new SeparatorBuilder());
-
-        const uptimeText = new TextDisplayBuilder()
-            .setContent(
-                `**⏱️ Uptime**\n` +
-                `Iniciado: <t:${Math.round((Date.now() - oldData.uptime) / 1000)}:R>`
-            );
-
-        container.addTextDisplayComponents(uptimeText);
-
-        return interaction.editReply({
-            components: [container],
-            flags: MessageFlags.IsComponentsV2
-        });
+        return interaction.editReply({ embeds: [embed] });
     }
 } as ApplicationCommandStructure;
 
