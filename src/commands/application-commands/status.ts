@@ -92,7 +92,8 @@ export default {
                 .addFields(
                     {
                         name: `Latência do Gateway do Discord ${statusPingEmoji}`,
-                        value: `${client.ws.ping}ms`
+                        value: `${client.ws.ping}ms`,
+                        inline: false
                     },
                     {
                         name: `Status Geral ${statusEmoji}`,
