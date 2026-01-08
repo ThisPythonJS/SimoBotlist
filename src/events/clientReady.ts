@@ -3,10 +3,26 @@ import { client } from "../../index";
 
 client.once('clientReady', () => {
     if (!client.user) return;
-
-    const ping = client.ws.ping;
-  
-    client.user.setActivity(`⚡ simobotlist.online [${ping}ms]`, {
-        type: ActivityType.Custom
-    });
+    
+    const statuses = [
+        { name: (ping: number) => `⚡ simobotlist.online [${ping}ms]`, type: ActivityType.Custom },
+        { name: (ping: number) => `✨ discord.gg/simo [${ping}ms]`, type: ActivityType.Custom },
+    ];
+    
+    let currentIndex = 0;
+    
+    const updateStatus = () => {
+        const ping = client.ws.ping > 0 ? client.ws.ping : 0;
+        const status = statuses[currentIndex];
+        
+        client.user?.setActivity(status.name(ping), {
+            type: status.type
+        });
+        
+        currentIndex = (currentIndex + 1) % statuses.length;
+    };
+    
+    updateStatus();
+    
+    setInterval(updateStatus, 15000);
 });
