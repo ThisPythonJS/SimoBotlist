@@ -58,7 +58,7 @@ export default {
         
         const fetchData = async (): Promise<ApiStatusStructure | null> => {
             try {
-                const req = await fetch("https://simo-api.camposcloud.app/api/status");
+                const req = await fetch("https://api.simobotlist.online/api/status");
                 if (!req.ok) return null;
                 const json: ApiStatusStructure = await req.json();
                 return json;
