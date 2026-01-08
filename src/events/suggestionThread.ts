@@ -22,8 +22,8 @@ client.on('messageCreate', async (message: Message): Promise<void> => {
             allowedMentions: { parse: [] }
         });
       
-        await message.react('👍');
-        await message.react('👎');
+        await message.react('1457340980452786320');
+        await message.react('1457340965974049044');
         
         console.log(`Thread criada para sugestão de ${message.author.tag}`);
     } catch (error) {
