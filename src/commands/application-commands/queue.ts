@@ -65,12 +65,12 @@ export default {
 					new ButtonBuilder()
 						.setCustomId("aprovado")
 						.setLabel("Aprovar")
-						.setStyle(ButtonStyle.Success)
+						.setStyle(ButtonStyle.Secondary)
 						.setEmoji("<:checkcircle:1458870534539317341>"),
 					new ButtonBuilder()
 						.setCustomId("recusado")
 						.setLabel("Recusar")
-						.setStyle(ButtonStyle.Danger)
+						.setStyle(ButtonStyle.Secondary)
 						.setEmoji("<:crosscircle:1458870522258657393>")
 				);
 
@@ -107,6 +107,8 @@ export default {
 
 					if (!modalInteraction) return;
 
+					await modalInteraction.deferReply({ ephemeral: true });
+
 					const comentarios = modalInteraction.fields.getTextInputValue("comentarios") || "Nenhum comentário fornecido.";
 
 					await botSchema.findById(selbot?._id).updateOne({
@@ -116,13 +118,13 @@ export default {
 					const selbotMember = interaction.guild?.members.cache.get(selbot?._id as string);
 
 					if (selbotMember) {
-						selbotMember.roles.add("1167271802934923274");
+						await selbotMember.roles.add("1458604131257290905");
 					}
 
 					const ownerMember = interaction.guild?.members.cache.get(selbot?.owner_id as string);
 
 					if (ownerMember) {
-						ownerMember.roles.add("991507628553412759");
+						await ownerMember.roles.add("1458601743251279955");
 					}
 
 					await fetch(process.env.WEBHOOK as string, {
@@ -146,9 +148,12 @@ export default {
 						await clearAnalysisThread(selbot._id);
 					}
 
-					await modalInteraction.deferUpdate();
-					return void interaction.editReply({ 
-						content: `O bot **${selbot?.name}** foi aprovado com sucesso!`, 
+					await modalInteraction.editReply({ 
+						content: `<:checkcircle:1458870534539317341> O bot **${selbot?.name}** foi aprovado com sucesso!`
+					});
+
+					await interaction.message.edit({ 
+						content: `<:checkcircle:1458870534539317341> O bot **${selbot?.name}** foi aprovado com sucesso!`,
 						embeds: [], 
 						components: [] 
 					});
@@ -178,6 +183,8 @@ export default {
 					}).catch(() => null);
 
 					if (!modalInteraction) return;
+
+					await modalInteraction.deferReply({ ephemeral: true });
 
 					const motivo = modalInteraction.fields.getTextInputValue("motivo");
 
@@ -223,9 +230,12 @@ export default {
 						await clearAnalysisThread(selbot._id);
 					}
 
-					await modalInteraction.deferUpdate();
-					return void interaction.editReply({ 
-						content: `O bot **${selbot?.name}** foi recusado com sucesso!`, 
+					await modalInteraction.editReply({ 
+						content: `<:crosscircle:1458870522258657393> O bot **${selbot?.name}** foi recusado com sucesso!`
+					});
+
+					await interaction.message.edit({ 
+						content: `<:crosscircle:1458870522258657393> O bot **${selbot?.name}** foi recusado com sucesso!`,
 						embeds: [], 
 						components: [] 
 					});
