@@ -31,7 +31,7 @@ client.on('messageCreate', async (message): Promise<any> => {
 
                 if (existingThread && !existingThread.archived) {
                     await message.reply({
-                        content: `<:errado:1457340965974049044> Já existe uma thread de análise ativa para **${botData.name}**: ${existingThread}`,
+                        content: `<:crosscircle:1458870522258657393> Já existe uma thread de análise ativa para **${botData.name}**: ${existingThread}`,
                         allowedMentions: { repliedUser: false }
                     });
                     continue;
@@ -46,10 +46,14 @@ client.on('messageCreate', async (message): Promise<any> => {
 
             activeAnalysisThreads.set(botId, thread.id);
 
+            const avatarUrl = botData.avatar?.startsWith('http') 
+                ? botData.avatar 
+                : `https://cdn.discordapp.com/avatars/${botId}/${botData.avatar}.png`;
+
             const embed = new EmbedBuilder()
                 .setTitle(`Análise: ${botData.name}`)
                 .setColor(0x054f77)
-                .setThumbnail(botData.avatar)
+                .setThumbnail(avatarUrl)
                 .setDescription(`Thread criada para análise do bot **${botData.name}**.`)
                 .addFields(
                     { name: "Desenvolvedor", value: `<@${botData.owner_id}>`, inline: true },
@@ -101,7 +105,7 @@ client.on('messageCreate', async (message): Promise<any> => {
         } catch (error) {
             console.error(`Erro ao criar thread para o bot ${botId}:`, error);
             await message.reply({
-                content: `<:errado:1457340965974049044> Ocorreu um erro ao criar a thread de análise para ${botUser}.`,
+                content: `<:crosscircle:1458870522258657393> Ocorreu um erro ao criar a thread de análise para ${botUser}.`,
                 allowedMentions: { repliedUser: false }
             });
         }

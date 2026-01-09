@@ -2,6 +2,7 @@ import type { ApplicationCommandStructure, BotStructure } from "../../types";
 import { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuInteraction, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import { botSchema } from "../../schemas/Bot";
 import { userSchema } from "../../schemas/User";
+import { clearAnalysisThread } from "../../events/botAnalysisThread";
 
 export default {
 	name: "queue",
@@ -9,14 +10,14 @@ export default {
 		const members = await interaction.guild?.members.fetch();
 
 		if (!members?.find((member) => member.id === interaction.user.id)?.roles.cache.has("1458601523562151999")) 
-			return interaction.reply("<:errado:1457340965974049044> Você precisa ser um verificador para usar o comando.");
+			return interaction.reply("<:crosscircle:1458870522258657393> Você precisa ser um verificador para usar o comando.");
 
 		let botsall: Array<{ label: string; value: string; description: string }> = [];
 
 		const bots = await botSchema.find({ approved: false });
 
 		if (bots.length === 0) 
-			return interaction.reply({ content: "<:errado:1457340965974049044> Não há bots para serem verificados." });
+			return interaction.reply({ content: "<:crosscircle:1458870522258657393> Não há bots para serem verificados." });
 
 		const embed: EmbedBuilder = new EmbedBuilder()
 			.setTitle("Queue")
@@ -65,12 +66,12 @@ export default {
 						.setCustomId("aprovado")
 						.setLabel("Aprovar")
 						.setStyle(ButtonStyle.Success)
-						.setEmoji("✅"),
+						.setEmoji("<:checkcircle:1458870534539317341>"),
 					new ButtonBuilder()
 						.setCustomId("recusado")
 						.setLabel("Recusar")
 						.setStyle(ButtonStyle.Danger)
-						.setEmoji("✖️")
+						.setEmoji("<:crosscircle:1458870522258657393>")
 				);
 
 			const int = await interaction.update({ embeds: [embed], components: [actionRow] });
@@ -133,13 +134,17 @@ export default {
 							content: `<@${selbot?.owner_id}>`,
 							embeds: [
 								{
-									title: `<:correto:1457340980452786320> ${selbot?.name} foi aprovado na análise`,
+									title: `<:checkcircle:1458870534539317341> ${selbot?.name} foi aprovado na análise`,
 									description: `> **Comentários do analisador:**\n${comentarios}`,
 									color: 0x054f77
 								}
 							]
 						})
 					});
+
+					if (selbot?._id) {
+						await clearAnalysisThread(selbot._id);
+					}
 
 					await modalInteraction.deferUpdate();
 					return void interaction.editReply({ 
@@ -187,7 +192,7 @@ export default {
 							content: `<@${selbot?.owner_id}>`,
 							embeds: [
 								{
-									title: `<:errado:1457340965974049044> ${selbot?.name} foi recusado na análise`,
+									title: `<:crosscircle:1458870522258657393> ${selbot?.name} foi recusado na análise`,
 									description: `**Motivo:**\n${motivo}`,
 									color: 0xFF0000
 								}
@@ -214,9 +219,13 @@ export default {
 						await user.save();
 					}
 
+					if (selbot?._id) {
+						await clearAnalysisThread(selbot._id);
+					}
+
 					await modalInteraction.deferUpdate();
 					return void interaction.editReply({ 
-						content: `Bot **${selbot?.name}** foi recusado com sucesso!`, 
+						content: `O bot **${selbot?.name}** foi recusado com sucesso!`, 
 						embeds: [], 
 						components: [] 
 					});
