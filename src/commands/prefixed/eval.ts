@@ -12,12 +12,12 @@ export default {
     aliases: ['ev', 'e'],
     async run(client, message, args) {
         if (!OWNERS_ID.includes(message.author.id)) return;
-        if (!args[0]) return message.channel.send('<:errado:1457340965974049044> Nenhum código foi fornecido');
+        if (!args[0]) return message.channel.send('<:crosscircle:1458870522258657393> Nenhum código foi fornecido');
 
         const silent = args[0] === '$silent';
         const code = (silent ? args.slice(1) : args).join(' ').slice(0, 1900);
 
-        if (!code) return message.channel.send('<:errado:1457340965974049044> Nenhum código foi fornecido');
+        if (!code) return message.channel.send('<:crosscircle:1458870522258657393> Nenhum código foi fornecido');
 
         try {
             let evaluated: unknown = eval(code);
@@ -25,14 +25,14 @@ export default {
             if (evaluated instanceof Promise) evaluated = await evaluated;
 
             if (silent && evaluated === undefined) {
-                return await message.react('<:correto:1457340980452786320>').catch(() => {});
+                return await message.react('<:checkcircle:1458870534539317341>').catch(() => {});
             }
 
             if (silent) {
                 return await sendResult(message, evaluated, code);
             }
 
-            await message.react('<:correto:1457340980452786320>').catch(() => {});
+            await message.react('<:checkcircle:1458870534539317341>').catch(() => {});
             
             if (evaluated !== undefined) {
                 await sendResult(message, evaluated, code);
@@ -41,10 +41,10 @@ export default {
             const error: Error = unknownError as Error;
 
             if (!silent) {
-                await message.react('<:errado:1457340965974049044>').catch(() => {});
+                await message.react('<:crosscircle:1458870522258657393>').catch(() => {});
             }
 
-            const errorMsg = await message.channel.send(`<:errado:1457340965974049044> **${error.name}:** ${error.message}`);
+            const errorMsg = await message.channel.send(`<:crosscircle:1458870522258657393> **${error.name}:** ${error.message}`);
             setupDeleteButtons(errorMsg, message);
         }
     }
@@ -119,7 +119,7 @@ async function sendPaginated(message: Message, items: string[], code: string) {
                 await sendResult(message, evaluated, code);
             } catch (error: any) {
                 await botMsg.edit({
-                    content: `<:errado:1457340965974049044> **${error.name}:** ${error.message}`,
+                    content: `<:crosscircle:1458870522258657393> **${error.name}:** ${error.message}`,
                     components: [createDeleteRow()]
                 });
             }
@@ -181,7 +181,7 @@ function setupCollector(botMsg: Message, authorMsg: Message) {
                 await sendResult(authorMsg, evaluated, fakeArgs.join(' '));
             } catch (error: any) {
                 await authorMsg.reply({
-                    content: `<:errado:1457340965974049044> **${error.name}:** ${error.message}`,
+                    content: `<:crosscircle:1458870522258657393> **${error.name}:** ${error.message}`,
                     components: [createDeleteRow()]
                 });
             }
