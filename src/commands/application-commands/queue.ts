@@ -8,7 +8,7 @@ export default {
 	async run(client, interaction) {
 		const members = await interaction.guild?.members.fetch();
 
-		if (!members?.find((member) => member.id === interaction.user.id)?.roles.cache.has("991400149307887696")) 
+		if (!members?.find((member) => member.id === interaction.user.id)?.roles.cache.has("1458601523562151999")) 
 			return interaction.reply("<:errado:1457340965974049044> Você precisa ser um verificador para usar o comando.");
 
 		let botsall: Array<{ label: string; value: string; description: string }> = [];
